@@ -72,11 +72,6 @@ void loop() {
   currentMoist = map(analogRead(moistSensor), 0, 4095, 0, 100);
   currentTemp = dht.readTemperature();
 
-  if (isnan(currentTemp)) {
-    Blynk.virtualWrite(V4, "Temp sensor eror");
-    return;
-  }
-
   // Receive status
   t = millis();
   if(t-tDisplay >= displayDelay){
@@ -84,7 +79,6 @@ void loop() {
     tDisplay=t;
     if (isnan(currentTemp)) {
       Blynk.virtualWrite(V4, "Temp sensor eror");
-      return;
     }
   }
   // Auto mode or manual mode
