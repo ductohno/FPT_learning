@@ -1,132 +1,106 @@
 #define BLYNK_TEMPLATE_ID ""
 #define BLYNK_TEMPLATE_NAME "Watering automatic"
 #define BLYNK_AUTH_TOKEN ""
-#include <BlynkSimpleEsp32.h> 
-#include <WiFi.h>  
+
+#include <BlynkSimpleEsp32.h>
+#include <WiFi.h>
 #include <WiFiClient.h>
 #include "DHT.h"
 
-char ssid[] = "YourWiFi";
-char pass[] = "YourPass";
+// WiFi
+char ssid[] = "AndroidAP";
+char pass[] = "11111111";
 
-// port of sensor and 5v relay
+// Sensor & Relay pins
 int moistSensor = 34;
-int tempSensor = 33;
+int tempSensor = 22;
 int relay = 25;
 
-// constant
+// Constants
 int minMoist = 30;
 int maxMoist = 50;
-int minTemp = 15;
-int readSensorDelayPumpOn = 500;
-int readSensorDelayPumpOff = 2000;
-int manualDelay = 100;
-int displayDelay = 1000;
+float minTemp = 15.0;
 
-// status
+// Status
 int pumpOpen = 0;
 int currentMoist = 0;
-int currentTemp = 0;
-unsigned long delayOfSensor = 0;
-unsigned long tDisplay=0, tSensor=0 ,tManual=0, t;
-bool isAutoMode = false;
-bool manualInput = false;
+float currentTemp = 0;
+int isAutoMode = 1;
+int manualInput = 0;
+
 
 // DHT config
-#define DHTTYPE DHT11    
+#define DHTTYPE DHT11
 DHT dht(tempSensor, DHTTYPE);
 
-// read blynk button
-BLYNK_WRITE(V0) { 
-  isAutoMode = param.asInt();
+// Timer
+BlynkTimer timer;
+
+// ----------------- Functions -----------------
+
+// Read sensors
+void readSensor() {
+  currentMoist = analogRead(moistSensor);
+  currentMoist = map(currentMoist, 0, 4095, 100, 0); // 0=wet, 100=dry
+  currentTemp = dht.readTemperature();
+
+  Serial.print("Moisture %: "); Serial.print(currentMoist);
+  Serial.print(" | Temperature: "); Serial.println(currentTemp);
+  Serial.print("Pump status: "); Serial.println(pumpOpen);
 }
 
-BLYNK_WRITE(V1) { 
-  manualInput = param.asInt();
-}
-
-// Send data to blynk
+// Send data to Blynk
 void sendToBlynk() {
   Blynk.virtualWrite(V2, currentMoist);
   Blynk.virtualWrite(V3, currentTemp);
-  if(pumpOpen){
-    Blynk.virtualWrite(V4, "ON");
+  Blynk.virtualWrite(V4, pumpOpen ? "PUMP ON" : "PUMP OFF");
+}
+
+// Automatic watering
+void automaticWater() {
+  if (isAutoMode == 1) {
+    if (currentMoist < minMoist && currentTemp > minTemp) {
+      pumpOpen = 1;
+    } else if (currentMoist > maxMoist || currentTemp <= minTemp) {
+      pumpOpen = 0;
+    }
+    digitalWrite(relay, pumpOpen);
   }
-  else{
-    Blynk.virtualWrite(V4, "OFF");
+}
+
+// ----------------- Blynk Handlers -----------------
+
+BLYNK_WRITE(V0) { 
+  isAutoMode = param.asInt();
+  Serial.print("Auto mode: "); Serial.println(isAutoMode);
+}
+
+BLYNK_WRITE(V1) { // Manual control
+  manualInput = param.asInt();
+  Serial.print("Manual input: "); Serial.println(manualInput);
+
+  if (isAutoMode == 0) {
+    pumpOpen = manualInput ? 1 : 0;
+    digitalWrite(relay, pumpOpen);
   }
 }
 
 void setup() {
-  Serial.begin(9600);
+  Serial.begin(115200);
+
   pinMode(moistSensor, INPUT);
   pinMode(tempSensor, INPUT);
   pinMode(relay, OUTPUT);
   digitalWrite(relay, pumpOpen);
+
   Blynk.begin(BLYNK_AUTH_TOKEN, ssid, pass);
+  dht.begin();
+  timer.setInterval(500L, readSensor);       
+  timer.setInterval(2000L, sendToBlynk);   
+  timer.setInterval(500L, automaticWater);   
 }
 
 void loop() {
   Blynk.run();
-  // Receive data from sensor
-  currentMoist = map(analogRead(moistSensor), 0, 4095, 0, 100);
-  currentTemp = dht.readTemperature();
-
-  // Receive status
-  t = millis();
-  if(t-tDisplay >= displayDelay){
-    sendToBlynk();
-    tDisplay=t;
-    if (isnan(currentTemp)) {
-      Blynk.virtualWrite(V4, "Temp sensor eror");
-    }
-  }
-  // Auto mode or manual mode
-  if(isAutoMode == true){
-    // Decide the long of sensor delay
-    if( pumpOpen == 1){
-      delayOfSensor = readSensorDelayPumpOn;
-    }
-    else{
-      delayOfSensor = readSensorDelayPumpOff;
-    }
-    if( t-tSensor >= delayOfSensor ){
-      if( currentMoist <= minMoist || pumpOpen == 1){
-        if( currentTemp > minTemp ){
-          // If plant not enough moist, open pump
-          if( currentMoist <= maxMoist ){
-            pumpOpen=1;
-          }
-          // If enough, stop pump
-          else{
-            pumpOpen=0;
-          }
-        }
-        else{
-          // close the pump
-          pumpOpen=0;
-        }
-      }
-      else{
-        // close the pump
-        pumpOpen=0;
-      }
-      digitalWrite(relay, pumpOpen);
-      tSensor = t;
-    }
-  }
-  else{
-    if(t-tManual > manualDelay){
-      // open pump if manualInput is true
-      if( manualInput == true){
-        pumpOpen=1;
-      }
-      // close pump if manualInput is false
-      else{
-        pumpOpen=0;
-      }
-      digitalWrite(relay, pumpOpen);
-      tManual = t;
-    }
-  }
+  timer.run();
 }
