@@ -19,7 +19,7 @@ int relay = 25;
 // Constants
 int minMoist = 30;
 int maxMoist = 50;
-float minTemp = 15.0;
+float minTemp = 12.0;
 
 // Status
 int pumpOpen = 0;
@@ -53,7 +53,12 @@ void readSensor() {
 void sendToBlynk() {
   Blynk.virtualWrite(V2, currentMoist);
   Blynk.virtualWrite(V3, currentTemp);
-  Blynk.virtualWrite(V4, pumpOpen ? "PUMP ON" : "PUMP OFF");
+  if(pumpOpen){
+    Blynk.virtualWrite(V4, "PUMP ON");
+  }
+  else{
+    Blynk.virtualWrite(V4, "PUMP OFF");
+  }
 }
 
 // Automatic watering
@@ -80,7 +85,12 @@ BLYNK_WRITE(V1) { // Manual control
   Serial.print("Manual input: "); Serial.println(manualInput);
 
   if (isAutoMode == 0) {
-    pumpOpen = manualInput ? 1 : 0;
+    if(manualInput==1){
+      pumpOpen = 1;
+    }
+    else{
+      pumpOpen = 0;
+    }
     digitalWrite(relay, pumpOpen);
   }
 }
