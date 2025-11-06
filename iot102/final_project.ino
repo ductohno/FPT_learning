@@ -105,9 +105,9 @@ void setup() {
 
   Blynk.begin(BLYNK_AUTH_TOKEN, ssid, pass);
   dht.begin();
-  timer.setInterval(500L, readSensor);       
+  timer.setInterval(100L, readSensor);       
   timer.setInterval(2000L, sendToBlynk);   
-  timer.setInterval(500L, automaticWater);   
+  timer.setInterval(100L, automaticWater);   
 }
 
 void loop() {
