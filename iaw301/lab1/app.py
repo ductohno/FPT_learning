@@ -1,5 +1,5 @@
 import sqlite3
-from fastapi import FastAPI, Form
+from fastapi import FastAPI, Form, Response
 from fastapi.responses import FileResponse
 from fastapi.responses import HTMLResponse
 import uvicorn
@@ -54,13 +54,15 @@ def loginForm():
     return FileResponse("login.html")
 
 @app.post("/login")
-def login(username: str = Form(...),  password: str = Form(...)):
+def login(response: Response, username: str = Form(...),  password: str = Form(...)):
     if is_user_true(username, password):
+        response.set_cookie(key="username", value=username)
         return "Login thành công"
     return "Login thất bại"
 
 @app.get("/logout")
-def logout():
+def logout(response: Response):
+    response.delete_cookie(key="username")
     return "You are logout"
 
 @app.get("/all", response_class=HTMLResponse)
@@ -110,5 +112,3 @@ if __name__ == "__main__":
         host="127.0.0.1",
         port=8888
     )
-
-# https://chatgpt.com/share/6aa7bdcb-d778-83ec-b16d-68cd26c89b37
