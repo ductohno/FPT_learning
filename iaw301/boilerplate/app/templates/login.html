@@ -1,0 +1,83 @@
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Đăng nhập - FastAPI Boilerplate</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="/static/style.css">
+</head>
+<body>
+  <div class="container">
+    <div class="card">
+      <div class="card-header">
+        <span class="badge">FastAPI + SQLite</span>
+        <h1 class="title">Đăng Nhập</h1>
+        <p class="subtitle">Nhập thông tin tài khoản để tiếp tục</p>
+      </div>
+
+      {% if error %}
+      <div class="alert alert-error" role="alert">
+        <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+          <circle cx="12" cy="12" r="10"></circle>
+          <line x1="12" y1="8" x2="12" y2="12"></line>
+          <line x1="12" y1="16" x2="12.01" y2="16"></line>
+        </svg>
+        <span>{{ error }}</span>
+      </div>
+      {% endif %}
+
+      {% if message %}
+      <div class="alert alert-success" role="alert">
+        <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+          <path d="M22 11.08V12a10 10 0 1 1-5.93-9.14"></path>
+          <polyline points="22 4 12 14.01 9 11.01"></polyline>
+        </svg>
+        <span>{{ message }}</span>
+      </div>
+      {% endif %}
+
+      <form action="/login" method="POST">
+        <div class="form-group">
+          <label for="identifier">Tên người dùng hoặc Email</label>
+          <div class="input-wrapper">
+            <input 
+              type="text" 
+              id="identifier" 
+              name="identifier" 
+              class="form-input" 
+              placeholder="admin hoặc admin@example.com" 
+              required
+              value="{{ identifier if identifier else '' }}"
+            >
+          </div>
+        </div>
+
+        <div class="form-group">
+          <label for="password">Mật khẩu</label>
+          <div class="input-wrapper">
+            <input 
+              type="password" 
+              id="password" 
+              name="password" 
+              class="form-input" 
+              placeholder="••••••••" 
+              required
+            >
+          </div>
+        </div>
+
+        <button type="submit" class="btn-submit">Đăng nhập</button>
+      </form>
+
+      <div class="helper-box">
+        <p><strong>Tài khoản thử nghiệm có sẵn:</strong></p>
+        <div>User 1: <code>admin</code> / <code>admin123</code> (hoặc <code>admin@example.com</code>)</div>
+        <div style="margin-top: 4px;">User 2: <code>user</code> / <code>user123</code> (hoặc <code>user@example.com</code>)</div>
+      </div>
+    </div>
+  </div>
+</body>
+</html>

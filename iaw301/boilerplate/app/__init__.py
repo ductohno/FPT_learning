@@ -1,0 +1,3 @@
+"""
+Boilerplate FastAPI + SQLite App
+"""

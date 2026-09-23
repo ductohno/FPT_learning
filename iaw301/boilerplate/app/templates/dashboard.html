@@ -1,0 +1,56 @@
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Bảng điều khiển - FastAPI Boilerplate</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="/static/style.css">
+</head>
+<body>
+  <div class="container">
+    <div class="card">
+      <div class="card-header">
+        <span class="badge" style="background: rgba(16, 185, 129, 0.15); border-color: rgba(16, 185, 129, 0.3); color: #34d399;">
+          Đã xác thực
+        </span>
+        <h1 class="title">Đăng Nhập Thành Công</h1>
+        <p class="subtitle">Chào mừng trở lại, {{ user.full_name or user.username }}!</p>
+      </div>
+
+      <div class="alert alert-success">
+        <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+          <path d="M22 11.08V12a10 10 0 1 1-5.93-9.14"></path>
+          <polyline points="22 4 12 14.01 9 11.01"></polyline>
+        </svg>
+        <span>Bạn đã đăng nhập thành công vào hệ thống.</span>
+      </div>
+
+      <table class="user-info-table">
+        <tr>
+          <td>Mã người dùng:</td>
+          <td><code>#{{ user.id }}</code></td>
+        </tr>
+        <tr>
+          <td>Username:</td>
+          <td><strong>{{ user.username }}</strong></td>
+        </tr>
+        <tr>
+          <td>Email:</td>
+          <td>{{ user.email }}</td>
+        </tr>
+        <tr>
+          <td>Họ và tên:</td>
+          <td>{{ user.full_name }}</td>
+        </tr>
+      </table>
+
+      <div style="text-align: center; margin-top: 24px;">
+        <a href="/logout" class="btn-logout">Đăng Xuất</a>
+      </div>
+    </div>
+  </div>
+</body>
+</html>
